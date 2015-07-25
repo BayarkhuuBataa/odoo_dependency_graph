@@ -19,9 +19,7 @@ class DependencyGraph:
 		try:
 			client = erppeek.Client(server, db=db, user=user, password=password, verbose=False)
 		except:
-			print "Error connecting to {d} on {s} using credentials {u}:{p}".format(d=db, s=server, u=user, p=password)
-			print "Exiting...."
-			exit(1)
+			raise RuntimeError("Error connecting to {d} on {s} using credentials {u}:{p}".format(d=db, s=server, u=user, p=password))
 		return client
 
 	def __init__(self, module, db='openerp', server='http://localhost:8069', user='admin', password='admin'):
@@ -41,8 +39,7 @@ class DependencyGraph:
 		# check that the module in question exists
 		module_present = self.client.search(self.mod_reg, [['name', '=', module]])
 		if not module_present:
-			print "{m} module not found in database".format(m=module)
-			exit(1)
+			raise RuntimeError("{m} module not found in database".format(m=module))
 		else:
 			self.hierarchy = self.get_hierarchy_for_module(module)
 
