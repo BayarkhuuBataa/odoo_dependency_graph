@@ -3,24 +3,23 @@ __author__ = 'colinwren'
 import erppeek
 
 
-class DependencyGraph:
+def get_erppeek_client(server='http://localhost:8069', db='openerp', user='admin', password='admin'):
+	"""
+	Get a ERPPeek client for us to use, if one not available then close the function
+	:param server: Server address (with XML-RPC port)
+	:param db: Name of database
+	:param user: Username to connect with
+	:param password: Password for username connecting with
+	:return: A erppeek.Client object we can use for XML-RPC calls
+	"""
+	client = None
+	try:
+		client = erppeek.Client(server, db=db, user=user, password=password, verbose=False)
+	except:
+		raise RuntimeError("Error connecting to {d} on {s} using credentials {u}:{p}".format(d=db, s=server, u=user, p=password))
+	return client
 
-	@staticmethod
-	def get_erppeek_client(server='http://localhost:8069', db='openerp', user='admin', password='admin'):
-		"""
-		Get a ERPPeek client for us to use, if one not available then close the function
-		:param server: Server address (with XML-RPC port)
-		:param db: Name of database
-		:param user: Username to connect with
-		:param password: Password for username connecting with
-		:return: A erppeek.Client object we can use for XML-RPC calls
-		"""
-		client = None
-		try:
-			client = erppeek.Client(server, db=db, user=user, password=password, verbose=False)
-		except:
-			raise RuntimeError("Error connecting to {d} on {s} using credentials {u}:{p}".format(d=db, s=server, u=user, p=password))
-		return client
+class DependencyGraph:
 
 	def __init__(self, module, db='openerp', server='http://localhost:8069', user='admin', password='admin'):
 		"""
@@ -33,11 +32,11 @@ class DependencyGraph:
 		:param password: Password for user we're connecting as
 		:return: An hierarchy object for the module specified
 		"""
-		self.client = self.get_erppeek_client(server=server, db=db, user=user, password=password)
+		self.client = get_erppeek_client(server=server, db=db, user=user, password=password)
 		self.mod_reg = 'ir.module.module'
 		self.dep_reg = 'ir.module.module.dependency'
 		# check that the module in question exists
-		module_present = self.client.search(self.mod_reg, [['name', '=', module]])
+		module_present = self.module_search(module)
 		if not module_present:
 			raise RuntimeError("{m} module not found in database".format(m=module))
 		else:
@@ -50,8 +49,14 @@ class DependencyGraph:
 		:return: Runs itself again with the new module or returns True
 		"""
 		# Search for modules that depend on the module
-		dependent_mod_ids = self.client.search(self.dep_reg, [['name', '=', module]])
+		# dependent_mod_ids = self.dependency_search(module)
 		# if dependent_mod_ids:
 		# 	dependent_mod_names = self.client.read(self.dep_reg, dependent_mod_ids, ['display_name'])
 		# 	print dependent_mod_names
 		return True
+
+	def dependency_search(self, module):
+		return self.client.search(self.dep_reg, [['name', '=', module]])
+
+	def module_search(self, module):
+		return self.client.search(self.mod_reg, [['name', '=', module]])
