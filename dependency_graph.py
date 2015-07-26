@@ -49,11 +49,9 @@ class DependencyGraph:
 		:return: Runs itself again with the new module or returns True
 		"""
 		# Search for modules that depend on the module
-		# dependent_mod_ids = self.dependency_search(module)
-		# if dependent_mod_ids:
-		# 	dependent_mod_names = self.client.read(self.dep_reg, dependent_mod_ids, ['display_name'])
-		# 	print dependent_mod_names
-		return True
+		dependent_mod_ids = self.dependency_search(module)
+		if not dependent_mod_ids:
+			return False
 
 	def dependency_search(self, module):
 		return self.client.search(self.dep_reg, [['name', '=', module]])
