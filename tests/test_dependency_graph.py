@@ -31,7 +31,7 @@ class TestDependencyGraph(unittest.TestCase):
 										'name': 'shift_management',
 										'deps': [
 											{
-												'name': 'nkamishibai',
+												'name': 'kamishibai',
 												'deps': []
 											}
 										]
@@ -133,6 +133,63 @@ class TestDependencyGraph(unittest.TestCase):
 		mock_dg = mock_dp('valid_module')
 		test_hierarchy = {'search': [{'name': 'valid_module', 'deps': []}]}
 		self.assertEqual(mock_dg.hierarchy, test_hierarchy, 'get_hierarchy_for_module did not return [] when finding no dependent modules')
+
+		# Mock Down
+		mock_client.stop()
+		mock_dp.module_search.stop()
+		mock_client.search.stop()
+		mock_client.search = orig_client_search
+		mock_dp.dependency_search.stop()
+		mock_dp.module_search = orig_mod_search
+		mock_dp.dependency_search = orig_dep_search
+
+	@patch('erppeek.Client')
+	def test_06_get_hierarchy_for_module_returns_a_nest_dict_when_another_module_depends_on_module(self, mock_client):
+		"""
+		Test that get_hierarchy_for_module returns a nested dict if another module depends on the module
+		:param mock_client: A mocked out version of erppeek.Client
+		:return:
+		"""
+		# Mock Up
+		mock_dp = DependencyGraph
+		orig_mod_search = mock_dp.module_search
+		orig_dep_search = mock_dp.dependency_search
+		orig_client_search = mock_client.search
+		mock_dp.module_search = MagicMock(return_value=[666])
+
+		def dependency_search_side_effect(value):
+			if value == 'valid_module':
+				return [666]
+			elif value == 'dependent_module':
+				return [668]
+			else:
+				return []
+
+		mock_dp.dependency_search = MagicMock()
+		mock_dp.dependency_search.side_effect = dependency_search_side_effect
+
+		def dependency_read_side_effect(value):
+			if value == [666]:
+				return ['dependent_module']
+			else:
+				return []
+
+		mock_dp.dependency_read = MagicMock()
+		mock_dp.dependency_read.side_effect = dependency_read_side_effect
+
+		mock_dg = mock_dp('valid_module')
+		test_hierarchy = {'search': [
+			{
+				'name': 'valid_module',
+				'deps': [
+					{
+						'name': 'dependent_module',
+						'deps': []
+					}
+				]
+			}
+		]}
+		self.assertEqual(mock_dg.hierarchy, test_hierarchy, 'get_hierarchy_for_module did not return nested dict when finding dependent modules')
 
 		# Mock Down
 		mock_client.stop()
