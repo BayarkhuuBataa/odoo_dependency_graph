@@ -9,6 +9,44 @@ from dependency_graph import DependencyGraph
 
 class TestDependencyGraph(unittest.TestCase):
 
+	""" I want this data structure:
+
+	{
+		'name': 'odoo_fixes',
+		'deps': [
+			{
+				'name': 'low_level',
+				'deps': [
+					{
+						'name': 'wrapper',
+						'deps': [
+							{
+								'name': 'platform',
+								'deps': [
+									{
+										'name': 'mobile',
+										'deps': []
+									},
+									{
+										'name': 'shift_management',
+										'deps': [
+											{
+												'name': 'nkamishibai',
+												'deps': []
+											}
+										]
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+
+	"""
+
 
 	@patch('erppeek.Client')
 	def test_01_get_erppeek_client_returns_valid_client(self, mock_client):
@@ -63,19 +101,19 @@ class TestDependencyGraph(unittest.TestCase):
 		# Mock Up
 		mock_dp = DependencyGraph
 		orig_mod_search = mock_dp.module_search
-		orig_ghfm = mock_dp.get_flat_hierarchy_for_module
+		orig_ghfm = mock_dp.get_hierarchy_for_module
 		mock_dp.module_search = MagicMock(return_value=[666])
-		mock_dp.get_flat_hierarchy_for_module = MagicMock()
+		mock_dp.get_hierarchy_for_module = MagicMock()
 
 		mock_dp('valid_module')
-		mock_dp.get_flat_hierarchy_for_module.assert_called_with('valid_module')
+		mock_dp.get_hierarchy_for_module.assert_called_with('valid_module', [])
 
 		# Mock Down
 		mock_client.stop()
 		mock_dp.module_search.stop()
-		mock_dp.get_flat_hierarchy_for_module.stop()
+		mock_dp.get_hierarchy_for_module.stop()
 		mock_dp.module_search = orig_mod_search
-		mock_dp.get_flat_hierarchy_for_module = orig_ghfm
+		mock_dp.get_hierarchy_for_module = orig_ghfm
 
 	@patch('erppeek.Client')
 	def test_05_get_hierarchy_for_module_returns_false_when_nothing_depend_on_module(self, mock_client):
@@ -93,8 +131,8 @@ class TestDependencyGraph(unittest.TestCase):
 		mock_dp.dependency_search = MagicMock(return_value=[])
 
 		mock_dg = mock_dp('valid_module')
-		test_hierarchy = [{'name': 'valid_module', 'deps': []}]
-		self.assertEqual(mock_dg.flat_hierarchy, test_hierarchy, 'get_hierarchy_for_module did not return [] when finding no dependent modules')
+		test_hierarchy = {'search': [{'name': 'valid_module', 'deps': []}]}
+		self.assertEqual(mock_dg.hierarchy, test_hierarchy, 'get_hierarchy_for_module did not return [] when finding no dependent modules')
 
 		# Mock Down
 		mock_client.stop()
@@ -104,33 +142,3 @@ class TestDependencyGraph(unittest.TestCase):
 		mock_dp.dependency_search.stop()
 		mock_dp.module_search = orig_mod_search
 		mock_dp.dependency_search = orig_dep_search
-
-
-
-	# @patch('erppeek.Client')
-	# def test_06_get_hierarchy_for_module_returns_list_of_module_names_when_finding_dependent_modules(self, mock_client):
-	# 	"""
-	# 	Test that get_hierarchy_for_module returns a list of module names if search returns them
-	# 	:param mock_client: A mocked out version of erppeek.Client
-	# 	:return:
-	# 	"""
-	# 	# Mock Up
-	# 	mock_dp = DependencyGraph
-	# 	orig_mod_search = mock_dp.module_search
-	# 	orig_dep_search = mock_dp.dependency_search
-	# 	orig_dep_read = mock_dp.dependency_read
-	# 	mock_dp.module_search = MagicMock(return_value=[666])
-	# 	mock_dp.dependency_search = MagicMock(return_value=[666, 1337])
-	# 	mock_dp.dependency_read = MagicMock(return_value=['test_module', 'another_test_module'])
-	#
-	# 	mock_dg = mock_dp('valid_module')
-	# 	self.assertEqual(mock_dg.hierarchy, ['test_module', 'another_test_module'], 'get_hierarchy_for_module did not return False when finding no dependent modules')
-	#
-	# 	# Mock Down
-	# 	mock_client.stop()
-	# 	mock_dp.module_search.stop()
-	# 	mock_dp.dependency_search.stop()
-	# 	mock_dp.dependency_read.stop()
-	# 	mock_dp.module_search = orig_mod_search
-	# 	mock_dp.dependency_search = orig_dep_search
-	# 	mock_dp.dependency_read = orig_dep_read
