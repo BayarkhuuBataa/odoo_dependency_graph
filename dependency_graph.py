@@ -12,12 +12,12 @@ def get_erppeek_client(server='http://localhost:8069', db='openerp', user='admin
 	:param password: Password for username connecting with
 	:return: A erppeek.Client object we can use for XML-RPC calls
 	"""
-	client = None
 	try:
 		client = erppeek.Client(server, db=db, user=user, password=password, verbose=False)
 	except:
-		raise RuntimeError("Error connecting to {d} on {s} using credentials {u}:{p}".format(d=db, s=server, u=user, p=password))
+		raise RuntimeError("Error connecting to {0} on {1} using credentials {2}:{3}".format(db, server, user, password))
 	return client
+
 
 class DependencyGraph:
 
@@ -94,4 +94,4 @@ class DependencyGraph:
 		:param module: Name of the module to look for
 		:return: List of IDs
 		"""
-		return self.client.search(self.mod_reg, [ ['state', '=', 'installed'], ['name', '=', module]])
+		return self.client.search(self.mod_reg, [['state', '=', 'installed'], ['name', '=', module]])
