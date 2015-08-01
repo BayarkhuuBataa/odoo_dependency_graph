@@ -40,9 +40,26 @@ class DependencyGraph:
 		if not module_present:
 			raise RuntimeError("{m} module not found in database".format(m=module))
 		else:
-			self.hierarchy = self.get_hierarchy_for_module(module)
+			self.flat_hierarchy = []
+			self.hierarchy = []
+			self.get_flat_hierarchy_for_module(module)
 
-	def get_hierarchy_for_module(self, module):
+	def get_flat_hierarchy_for_module(self, module):
+		# Check that module isn't already in hierarchy
+		current_deps = [m['deps'] for m in self.flat_hierarchy if m['name'] == module]
+		deps = self.get_dependencies_for_module(module)
+		if not current_deps:
+			mod_info = {
+				'name': module,
+				'deps': deps
+			}
+			self.flat_hierarchy.append(mod_info)
+		for mod in deps:
+			if mod not in current_deps:
+				current_deps.append(mod)
+				self.get_flat_hierarchy_for_module(mod)
+
+	def get_dependencies_for_module(self, module):
 		"""
 		Recursively get the hierarchy for a module
 		:param module: The module to get the hierarchy for
@@ -51,10 +68,33 @@ class DependencyGraph:
 		# Search for modules that depend on the module
 		dependent_mod_ids = self.dependency_search(module)
 		if not dependent_mod_ids:
-			return False
+			return []
+		dependent_mod_names = self.dependency_read(dependent_mod_ids)
+		return dependent_mod_names
+
+	def dependency_read(self, ids):
+		"""
+		Read ir.module.module.dependency for the names of the modules with the supplied IDs
+		:param ids: List of IDs for modules supplied
+		:return: List of names
+		"""
+		deps = self.client.read(self.dep_reg, ids, ['module_id'])
+		mod_ids = [dep['module_id'][0] for dep in deps]
+		mods = self.client.read(self.mod_reg, mod_ids, ['name'])
+		return [mod['name'] for mod in mods]
 
 	def dependency_search(self, module):
+		"""
+		Search ir.module.module.dependency for the IDs of modules that depend on the module
+		:param module: Name of the module to look for depending modules
+		:return: List of IDs
+		"""
 		return self.client.search(self.dep_reg, [['name', '=', module]])
 
 	def module_search(self, module):
+		"""
+		Search ir.module.module for the IDs of module
+		:param module: Name of the module to look for
+		:return: List of IDs
+		"""
 		return self.client.search(self.mod_reg, [['name', '=', module]])
