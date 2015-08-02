@@ -45,6 +45,7 @@ class DependencyGraph:
 
 	def get_hierarchy_for_module(self, module, level):
 		# Check that module isn't already in hierarchy
+		# TODO: Instead of using dicts use a tree
 		installed = self.module_search(module)
 		if installed:
 			deps = self.get_dependencies_for_module(module)
