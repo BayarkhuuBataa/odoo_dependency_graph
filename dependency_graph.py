@@ -1,6 +1,7 @@
 __author__ = 'colinwren'
 
 import erppeek
+from treelib import Tree
 
 
 def get_erppeek_client(server='http://localhost:8069', db='openerp', user='admin', password='admin'):
@@ -40,22 +41,22 @@ class DependencyGraph:
 		if not module_present:
 			raise RuntimeError("{m} module not found in database".format(m=module))
 		else:
-			self.hierarchy = {'search': []}
-			self.get_hierarchy_for_module(module, self.hierarchy['search'])
+			self.hierarchy = Tree()  # {'search': []}
+			self.hierarchy.create_node(module, module)
+			self.get_hierarchy_for_module(module)
 
-	def get_hierarchy_for_module(self, module, level):
+	def get_hierarchy_for_module(self, module, parent=None):
 		# Check that module isn't already in hierarchy
-		# TODO: Instead of using dicts use a tree
 		installed = self.module_search(module)
 		if installed:
+			if parent:
+				try:
+					self.hierarchy.create_node(module, module, parent=parent)
+				except:
+					pass
 			deps = self.get_dependencies_for_module(module)
-			mod_info = {
-				'name': module,
-				'deps': []
-			}
-			level.append(mod_info)
 			for mod in deps:
-				self.get_hierarchy_for_module(mod, mod_info['deps'])
+				self.get_hierarchy_for_module(mod, parent=module)
 
 	def get_dependencies_for_module(self, module):
 		"""
