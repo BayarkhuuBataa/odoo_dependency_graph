@@ -1,8 +1,8 @@
 __author__ = 'colinwren'
 
 from dependency_graph import DependencyGraph
-
 from treelib import Tree
+import svgwrite
 
 class SvgFormatter:
 
@@ -14,6 +14,8 @@ class SvgFormatter:
 
     def convert_hierarchy_to_svg(self):
         if isinstance(self.graph, Tree):
-            return self.graph.to_json()
+            svg_document = svgwrite.Drawing(filename='{0}_dependency_graph.svg'.format(self.graph.root),
+                                            size=('800px', '600px'))
+            return svg_document
         else:
             raise TypeError('Supplied graph is not of class Tree')

@@ -52,30 +52,45 @@ class TestSvgFormatter(unittest.TestCase):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = Tree()
 		mock_dp.hierarchy.create_node('test', 'test')
-		jsonf = SvgFormatter(mock_dp)
-		self.assertTrue(hasattr(jsonf, 'graph'), 'Init did not set up graph attribute')
+		svgf = SvgFormatter(mock_dp)
+		self.assertTrue(hasattr(svgf, 'graph'), 'Init did not set up graph attribute')
 
 	def test_03_raises_error_if_non_tree_graph_passed_to_convert_to_json(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = {'test': 'test'}
-		jsonf = SvgFormatter(mock_dp)
+		svgf = SvgFormatter(mock_dp)
 		with self.assertRaises(TypeError):
-			jsonf.convert_hierarchy_to_svg()
+			svgf.convert_hierarchy_to_svg()
 
-	def test_04_creates_a_svg_document_with_height_based_on_number_of_nested_dicts(self):
-		self.assertEqual(False, True, 'Did not create a SVG doc with right height for number of nested dicts')
+	def test_04_creates_a_svg_document_with_name_of_root_node(self):
+		mock_dp = Mock(spec=DependencyGraph)
+		mock_dp.hierarchy = Tree()
+		mock_dp.hierarchy.create_node('test', 'test')
+		svgf = SvgFormatter(mock_dp)
+		test_svg = svgf.convert_hierarchy_to_svg()
+		test_svg_fn = test_svg.filename
+		self.assertEqual(test_svg_fn, 'test_dependency_graph.svg', 'Did not create a SVG doc with right height for number of nested dicts - actual = {0}'.format(test_svg_fn))
 
-	def test_05_creates_a_rect_element_for_each_dependency(self):
+	def test_05_creates_a_svg_document_with_height_based_on_number_of_nested_dicts(self):
+		mock_dp = Mock(spec=DependencyGraph)
+		mock_dp.hierarchy = Tree()
+		mock_dp.hierarchy.create_node('test', 'test')
+		svgf = SvgFormatter(mock_dp)
+		test_svg = svgf.convert_hierarchy_to_svg()
+		test_svg_height = test_svg.attribs['height']
+		self.assertEqual(test_svg_height, '200px', 'Did not create a SVG doc with right height for number of nested dicts - actual = {0}'.format(test_svg_height))
+
+	def test_06_creates_a_rect_element_for_each_dependency(self):
 		self.assertEqual(False, True, 'Did not create a rect element for each dependency')
 
-	def test_06_places_the_rect_elements_bottom_up_based_on_depth(self):
+	def test_07_places_the_rect_elements_bottom_up_based_on_depth(self):
 		self.assertEqual(False, True, 'Did not place the rect elements correctly')
 
-	def test_07_adds_labels_to_the_rect_elements_with_module_name(self):
+	def test_08_adds_labels_to_the_rect_elements_with_module_name(self):
 		self.assertEqual(False, True, 'Did not add the correct label to the elements')
 
-	def test_08_when_a_module_has_multiple_dependencies_the_dependent_module_rects_are_on_the_same_level(self):
+	def test_09_when_a_module_has_multiple_dependencies_the_dependent_module_rects_are_on_the_same_level(self):
 		self.assertEqual(False, True, 'Did not put multiple dependencies on the same level')
 
-	def test_09_when_a_dependency_level_has_the_same_module_multiple_times_merge_the_rects(self):
+	def test_10_when_a_dependency_level_has_the_same_module_multiple_times_merge_the_rects(self):
 		self.assertEqual(False, True, 'Did not merge the rects when the same module is on the level many times')
