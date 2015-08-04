@@ -143,4 +143,4 @@ class TestSvgFormatter(unittest.TestCase):
 		test_svg = svgf.convert_hierarchy_to_svg(width='100%', height='100%')
 		test_rects = [rect for rect in test_svg.elements if isinstance(rect, svgwrite.shapes.Rect)]
 		level_1_rect = [r for r in test_rects if r.attribs['class'] == 'level-1'][0]
-		self.assertEqual(level_1_rect.attribs['width'], '44%', 'Did not set the correct width for multiple nodes on same depth - actual = {0}'.format(level_1_rect.attribs['width']))
+		self.assertEqual(level_1_rect.attribs['width'], '44.0%', 'Did not set the correct width for multiple nodes on same depth - actual = {0}'.format(level_1_rect.attribs['width']))
