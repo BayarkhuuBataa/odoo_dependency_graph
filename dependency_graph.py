@@ -48,15 +48,15 @@ class DependencyGraph:
 	def get_hierarchy_for_module(self, module, parent=None):
 		# Check that module isn't already in hierarchy
 		installed = self.module_search(module)
+		mod_id = module
 		if installed:
 			if parent:
-				try:
-					self.hierarchy.create_node(module, module, parent=parent)
-				except:
-					pass
+				if self.hierarchy.get_node(module):
+					mod_id = '{0}_{1}'.format(module, self.hierarchy.depth())
+				self.hierarchy.create_node(module, mod_id, parent=parent)
 			deps = self.get_dependencies_for_module(module)
 			for mod in deps:
-				self.get_hierarchy_for_module(mod, parent=module)
+				self.get_hierarchy_for_module(mod, parent=mod_id)
 
 	def get_dependencies_for_module(self, module):
 		"""
