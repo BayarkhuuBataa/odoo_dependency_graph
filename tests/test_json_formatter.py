@@ -13,11 +13,19 @@ class TestJsonFormatter(unittest.TestCase):
 
 	def test_02_initialises_with_dependency_graph_object(self):
 		mock_dp = Mock(spec=DependencyGraph)
-		mock_dp.hierarchy = {'search': []}
+		mock_dp.hierarchy = Tree()
+		mock_dp.hierarchy.create_node('test', 'test')
 		jsonf = JsonFormatter(mock_dp)
 		self.assertTrue(hasattr(jsonf, 'graph'), 'Init did not set up graph attribute')
 
-	def test_03_convert_to_json_returns_string_of_hierarchy(self):
+	def test_03_raises_error_if_non_tree_graph_passed_to_convert_to_json(self):
+		mock_dp = Mock(spec=DependencyGraph)
+		mock_dp.hierarchy = {'test': 'test'}
+		jsonf = JsonFormatter(mock_dp)
+		with self.assertRaises(TypeError):
+			jsonf.convert_hierarchy_to_json()
+
+	def test_04_convert_to_json_returns_string_of_hierarchy(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = Tree()
 		mock_dp.hierarchy.create_node('level_one', 'level_one')

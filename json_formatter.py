@@ -1,5 +1,6 @@
 __author__ = 'colinwren'
 from dependency_graph import DependencyGraph
+from treelib import Tree
 
 class JsonFormatter:
 
@@ -10,4 +11,7 @@ class JsonFormatter:
 			raise TypeError('Supplied dependency graph is not of class DependencyGraph')
 
 	def convert_hierarchy_to_json(self):
-		return self.graph.to_json()
+		if isinstance(self.graph, Tree):
+			return self.graph.to_json()
+		else:
+			raise TypeError('Supplied graph is not of class Tree')
