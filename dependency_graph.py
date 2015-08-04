@@ -41,7 +41,7 @@ class DependencyGraph:
 		if not module_present:
 			raise RuntimeError("{m} module not found in database".format(m=module))
 		else:
-			self.hierarchy = Tree()  # {'search': []}
+			self.hierarchy = Tree()
 			self.hierarchy.create_node(module, module)
 			self.get_hierarchy_for_module(module)
 

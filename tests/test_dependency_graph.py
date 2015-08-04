@@ -1,7 +1,7 @@
 __author__ = 'colinwren'
 
 import unittest
-import erppeek
+from treelib import Tree
 from mock import MagicMock
 from mock import patch
 import dependency_graph
@@ -106,7 +106,7 @@ class TestDependencyGraph(unittest.TestCase):
 		mock_dp.get_hierarchy_for_module = MagicMock()
 
 		mock_dp('valid_module')
-		mock_dp.get_hierarchy_for_module.assert_called_with('valid_module', [])
+		mock_dp.get_hierarchy_for_module.assert_called_with('valid_module')
 
 		# Mock Down
 		mock_client.stop()
@@ -131,8 +131,9 @@ class TestDependencyGraph(unittest.TestCase):
 		mock_dp.dependency_search = MagicMock(return_value=[])
 
 		mock_dg = mock_dp('valid_module')
-		test_hierarchy = {'search': [{'name': 'valid_module', 'deps': []}]}
-		self.assertEqual(mock_dg.hierarchy, test_hierarchy, 'get_hierarchy_for_module did not return [] when finding no dependent modules')
+		test_hierarchy = Tree()
+		test_hierarchy.create_node('valid_module', 'valid_module')
+		self.assertEqual(mock_dg.hierarchy.to_json(), test_hierarchy.to_json(), 'get_hierarchy_for_module did not return [] when finding no dependent modules')
 
 		# Mock Down
 		mock_client.stop()
@@ -178,18 +179,10 @@ class TestDependencyGraph(unittest.TestCase):
 		mock_dp.dependency_read.side_effect = dependency_read_side_effect
 
 		mock_dg = mock_dp('valid_module')
-		test_hierarchy = {'search': [
-			{
-				'name': 'valid_module',
-				'deps': [
-					{
-						'name': 'dependent_module',
-						'deps': []
-					}
-				]
-			}
-		]}
-		self.assertEqual(mock_dg.hierarchy, test_hierarchy, 'get_hierarchy_for_module did not return nested dict when finding dependent modules')
+		test_hierarchy = Tree()
+		test_hierarchy.create_node('valid_module', 'valid_module')
+		test_hierarchy.create_node('dependent_module', 'dependent_module', parent='valid_module')
+		self.assertEqual(mock_dg.hierarchy.to_json(), test_hierarchy.to_json(), 'get_hierarchy_for_module did not return nested dict when finding dependent modules')
 
 		# Mock Down
 		mock_client.stop()
