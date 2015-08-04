@@ -56,14 +56,21 @@ class TestSvgFormatter(unittest.TestCase):
 		svgf = SvgFormatter(mock_dp)
 		self.assertTrue(hasattr(svgf, 'graph'), 'Init did not set up graph attribute')
 
-	def test_03_raises_error_if_non_tree_graph_passed_to_convert_to_json(self):
+	def test_03_raises_error_if_non_tree_graph_passed_to_convert_to_svg(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = {'test': 'test'}
 		svgf = SvgFormatter(mock_dp)
 		with self.assertRaises(TypeError):
 			svgf.convert_hierarchy_to_svg()
 
-	def test_04_creates_a_svg_document_with_name_of_root_node(self):
+	def test_04_raises_error_if_negative_margin_passed_to_covert_to_svg(self):
+		mock_dp = Mock(spec=DependencyGraph)
+		mock_dp.hierarchy = self.test_tree
+		svgf = SvgFormatter(mock_dp)
+		with self.assertRaises(ValueError):
+			svgf.convert_hierarchy_to_svg(margin=-666)
+
+	def test_05_creates_a_svg_document_with_name_of_root_node(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = Tree()
 		mock_dp.hierarchy.create_node('test', 'test')
@@ -72,7 +79,7 @@ class TestSvgFormatter(unittest.TestCase):
 		test_svg_fn = test_svg.filename
 		self.assertEqual(test_svg_fn, 'test_dependency_graph.svg', 'Did not create a SVG doc with right height for number of nested dicts - actual = {0}'.format(test_svg_fn))
 
-	def test_05_creates_a_svg_document_with_default_a4_300ppi_size(self):
+	def test_06_creates_a_svg_document_with_default_a4_300ppi_size(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = Tree()
 		mock_dp.hierarchy.create_node('test', 'test')
@@ -83,7 +90,7 @@ class TestSvgFormatter(unittest.TestCase):
 		self.assertEqual(test_svg_width, '2480px', 'Did not create a SVG doc with right width for a4 300ppi - actual = {0}'.format(test_svg_width))
 		self.assertEqual(test_svg_height, '3508px', 'Did not create a SVG doc with right height for a4 300ppi - actual = {0}'.format(test_svg_height))
 
-	def test_06_creates_a_svg_document_with_supplied_size(self):
+	def test_07_creates_a_svg_document_with_supplied_size(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = Tree()
 		mock_dp.hierarchy.create_node('test', 'test')
@@ -94,7 +101,7 @@ class TestSvgFormatter(unittest.TestCase):
 		self.assertEqual(test_svg_width, '666px', 'Did not create a SVG doc with right width for a4 300ppi - actual = {0}'.format(test_svg_width))
 		self.assertEqual(test_svg_height, '1337px', 'Did not create a SVG doc with right height for a4 300ppi - actual = {0}'.format(test_svg_height))
 
-	def test_07_creates_a_rect_element_for_each_dependency(self):
+	def test_08_creates_a_rect_element_for_each_dependency(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = self.test_tree
 		svgf = SvgFormatter(mock_dp)
@@ -103,7 +110,7 @@ class TestSvgFormatter(unittest.TestCase):
 		expect_rects_size = self.test_tree.size()
 		self.assertEqual(len(test_rects_size), expect_rects_size, 'Did not create a rect element for each dependency - actual = {0}'.format(test_rects_size))
 
-	def test_08_places_the_rect_elements_bottom_up_based_on_depth(self):
+	def test_09_places_the_rect_elements_bottom_up_based_on_depth(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = self.test_tree
 		svgf = SvgFormatter(mock_dp)
@@ -124,7 +131,7 @@ class TestSvgFormatter(unittest.TestCase):
 		self.assertEqual(level_5_rect.attribs['y'], '18%', 'Did not place element correctly')
 		self.assertEqual(level_6_rect.attribs['y'], '5%', 'Did not place element correctly')
 
-	def test_09_adds_labels_to_the_rect_elements_with_module_name(self):
+	def test_10_adds_labels_to_the_rect_elements_with_module_name(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = Tree()
 		mock_dp.hierarchy.create_node('test', 'test')
@@ -133,7 +140,7 @@ class TestSvgFormatter(unittest.TestCase):
 		test_texts = [text for text in test_svg.elements if isinstance(text, svgwrite.text.Text)][0]
 		self.assertEqual(test_texts.text, 'test', 'Did not add the correct label to the elements')
 
-	def test_10_when_multiple_nodes_at_depth_each_rect_takes_up_a_percentage_of_row(self):
+	def test_11_when_multiple_nodes_at_depth_each_rect_takes_up_a_percentage_of_row(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = Tree()
 		mock_dp.hierarchy.create_node('test', 'test')
