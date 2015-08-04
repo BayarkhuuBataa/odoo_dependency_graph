@@ -1,8 +1,5 @@
 __author__ = 'colinwren'
-
-import json
 from dependency_graph import DependencyGraph
-
 
 class JsonFormatter:
 
@@ -13,4 +10,4 @@ class JsonFormatter:
 			raise TypeError('Supplied dependency graph is not of class DependencyGraph')
 
 	def convert_hierarchy_to_json(self):
-		return json.dumps(self.graph)
+		return self.graph.to_json()

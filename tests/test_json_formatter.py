@@ -4,7 +4,7 @@ from dependency_graph import DependencyGraph
 from json_formatter import JsonFormatter
 import unittest
 from mock import Mock
-import json
+from treelib import Tree
 
 class TestJsonFormatter(unittest.TestCase):
 
@@ -19,25 +19,10 @@ class TestJsonFormatter(unittest.TestCase):
 
 	def test_03_convert_to_json_returns_string_of_hierarchy(self):
 		mock_dp = Mock(spec=DependencyGraph)
-		mock_dp.hierarchy = {'search': [
-			{
-				'name': 'level_one',
-				'deps': [
-					{
-						'name': 'level_two_one',
-						'deps': [
-							{
-								'name': 'level_three',
-								'deps': []
-							}
-						]
-					},
-					{
-						'name': 'level_two_two',
-						'deps': []
-					}
-				]
-			}
-		]}
+		mock_dp.hierarchy = Tree()
+		mock_dp.hierarchy.create_node('level_one', 'level_one')
+		mock_dp.hierarchy.create_node('level_two_one', 'level_two_one', parent='level_one')
+		mock_dp.hierarchy.create_node('level_two_two', 'level_two_two', parent='level_one')
+		mock_dp.hierarchy.create_node('level_three', 'level_three', parent='level_two_one')
 		jsonf = JsonFormatter(mock_dp)
-		self.assertEqual(json.loads(jsonf.convert_hierarchy_to_json()), mock_dp.hierarchy, 'JSON not formatted correclty')
+		self.assertEqual(jsonf.convert_hierarchy_to_json(), mock_dp.hierarchy.to_json(), 'JSON not formatted correclty')
