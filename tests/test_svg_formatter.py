@@ -5,6 +5,7 @@ from treelib import Tree, Node
 from svg_formatter import SvgFormatter
 from dependency_graph import DependencyGraph
 from mock import Mock
+import svgwrite
 
 class TestSvgFormatter(unittest.TestCase):
 
@@ -71,26 +72,63 @@ class TestSvgFormatter(unittest.TestCase):
 		test_svg_fn = test_svg.filename
 		self.assertEqual(test_svg_fn, 'test_dependency_graph.svg', 'Did not create a SVG doc with right height for number of nested dicts - actual = {0}'.format(test_svg_fn))
 
-	def test_05_creates_a_svg_document_with_height_based_on_number_of_nested_dicts(self):
+	def test_05_creates_a_svg_document_with_default_a4_300ppi_size(self):
 		mock_dp = Mock(spec=DependencyGraph)
 		mock_dp.hierarchy = Tree()
 		mock_dp.hierarchy.create_node('test', 'test')
 		svgf = SvgFormatter(mock_dp)
 		test_svg = svgf.convert_hierarchy_to_svg()
 		test_svg_height = test_svg.attribs['height']
-		self.assertEqual(test_svg_height, '200px', 'Did not create a SVG doc with right height for number of nested dicts - actual = {0}'.format(test_svg_height))
+		test_svg_width = test_svg.attribs['width']
+		self.assertEqual(test_svg_width, '2480px', 'Did not create a SVG doc with right width for a4 300ppi - actual = {0}'.format(test_svg_width))
+		self.assertEqual(test_svg_height, '3508px', 'Did not create a SVG doc with right height for a4 300ppi - actual = {0}'.format(test_svg_height))
 
-	def test_06_creates_a_rect_element_for_each_dependency(self):
-		self.assertEqual(False, True, 'Did not create a rect element for each dependency')
+	def test_06_creates_a_svg_document_with_supplied_size(self):
+		mock_dp = Mock(spec=DependencyGraph)
+		mock_dp.hierarchy = Tree()
+		mock_dp.hierarchy.create_node('test', 'test')
+		svgf = SvgFormatter(mock_dp)
+		test_svg = svgf.convert_hierarchy_to_svg(width='666px', height='1337px')
+		test_svg_height = test_svg.attribs['height']
+		test_svg_width = test_svg.attribs['width']
+		self.assertEqual(test_svg_width, '666px', 'Did not create a SVG doc with right width for a4 300ppi - actual = {0}'.format(test_svg_width))
+		self.assertEqual(test_svg_height, '1337px', 'Did not create a SVG doc with right height for a4 300ppi - actual = {0}'.format(test_svg_height))
 
-	def test_07_places_the_rect_elements_bottom_up_based_on_depth(self):
-		self.assertEqual(False, True, 'Did not place the rect elements correctly')
+	def test_07_creates_a_rect_element_for_each_dependency(self):
+		mock_dp = Mock(spec=DependencyGraph)
+		mock_dp.hierarchy = self.test_tree
+		svgf = SvgFormatter(mock_dp)
+		test_svg = svgf.convert_hierarchy_to_svg()
+		test_rects_size = [rect for rect in test_svg.elements if isinstance(rect, svgwrite.shapes.Rect)]
+		expect_rects_size = self.test_tree.size()
+		self.assertEqual(len(test_rects_size), expect_rects_size, 'Did not create a rect element for each dependency - actual = {0}'.format(test_rects_size))
 
-	def test_08_adds_labels_to_the_rect_elements_with_module_name(self):
-		self.assertEqual(False, True, 'Did not add the correct label to the elements')
+	def test_08_places_the_rect_elements_bottom_up_based_on_depth(self):
+		mock_dp = Mock(spec=DependencyGraph)
+		mock_dp.hierarchy = self.test_tree
+		svgf = SvgFormatter(mock_dp)
+		test_svg = svgf.convert_hierarchy_to_svg(width='100px', height='100px', margin=5, padding=1)
+		test_rects = [rect for rect in test_svg.elements if isinstance(rect, svgwrite.shapes.Rect)]
+		level_0_rect = [r for r in test_rects if r.attribs['class'] == 'level-0'][0]
+		level_1_rect = [r for r in test_rects if r.attribs['class'] == 'level-1'][0]
+		level_2_rect = [r for r in test_rects if r.attribs['class'] == 'level-2'][0]
+		level_3_rect = [r for r in test_rects if r.attribs['class'] == 'level-3'][0]
+		level_4_rect = [r for r in test_rects if r.attribs['class'] == 'level-4'][0]
+		level_5_rect = [r for r in test_rects if r.attribs['class'] == 'level-5'][0]
+		level_6_rect = [r for r in test_rects if r.attribs['class'] == 'level-6'][0]
+		self.assertEqual(level_0_rect.attribs['y'], '83%', 'Did not place element correctly')
+		self.assertEqual(level_1_rect.attribs['y'], '70%', 'Did not place element correctly')
+		self.assertEqual(level_2_rect.attribs['y'], '57%', 'Did not place element correctly')
+		self.assertEqual(level_3_rect.attribs['y'], '44%', 'Did not place element correctly')
+		self.assertEqual(level_4_rect.attribs['y'], '31%', 'Did not place element correctly')
+		self.assertEqual(level_5_rect.attribs['y'], '18%', 'Did not place element correctly')
+		self.assertEqual(level_6_rect.attribs['y'], '5%', 'Did not place element correctly')
 
-	def test_09_when_a_module_has_multiple_dependencies_the_dependent_module_rects_are_on_the_same_level(self):
-		self.assertEqual(False, True, 'Did not put multiple dependencies on the same level')
-
-	def test_10_when_a_dependency_level_has_the_same_module_multiple_times_merge_the_rects(self):
-		self.assertEqual(False, True, 'Did not merge the rects when the same module is on the level many times')
+	def test_09_adds_labels_to_the_rect_elements_with_module_name(self):
+		mock_dp = Mock(spec=DependencyGraph)
+		mock_dp.hierarchy = Tree()
+		mock_dp.hierarchy.create_node('test', 'test')
+		svgf = SvgFormatter(mock_dp)
+		test_svg = svgf.convert_hierarchy_to_svg(width='100%', height='100%')
+		test_texts = [text for text in test_svg.elements if isinstance(text, svgwrite.text.Text)][0]
+		self.assertEqual(test_texts.text, 'test', 'Did not add the correct label to the elements')
