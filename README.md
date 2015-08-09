@@ -38,3 +38,11 @@ web
 ├── web_tests
 └── web_view_editor
 ```
+
+## Road Map
+- [x] Add ERPPeek integration to query Odoo instance
+- [x] Use Tree structure to handle hierarchy
+- [x] Add means to export to JSON
+- [ ] Add SVG export
+- [ ] Add functionality to add test / coverage metrics to dependencies (Cobertura) 
+- [ ] Wrap as command line tool
