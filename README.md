@@ -1,4 +1,4 @@
-# Odoo Dependency Graph Generator
+# Odoo Dependency Graph Generator [![Build Status](https://travis-ci.org/Gimpneek/odoo_dependency_graph.svg?branch=master)](https://travis-ci.org/Gimpneek/odoo_dependency_graph)
 A simple script that creates a dependency graph for a given Odoo module. 
 
 ## How it does it
