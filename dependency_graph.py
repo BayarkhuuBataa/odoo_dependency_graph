@@ -1,8 +1,6 @@
-__author__ = 'colinwren'
-
+import uuid
 import erppeek
 from treelib import Tree
-import uuid
 
 
 def get_erppeek_client(server='http://localhost:8069', db='openerp', user='admin', password='admin'):
@@ -44,9 +42,9 @@ class DependencyGraph:
 		else:
 			self.hierarchy = Tree()
 			self.hierarchy.create_node(module, module)
-			self.get_hierarchy_for_module(module)
+			self.get_downstream_hierarchy_for_module(module)
 
-	def get_hierarchy_for_module(self, module, parent=None):
+	def get_downstream_hierarchy_for_module(self, module, parent=None):
 		# Check that module isn't already in hierarchy
 		installed = self.module_search(module)
 		mod_id = module
@@ -58,7 +56,7 @@ class DependencyGraph:
 				self.hierarchy.create_node(module, mod_id, parent=parent)
 			deps = self.get_dependencies_for_module(module)
 			for mod in deps:
-				self.get_hierarchy_for_module(mod, parent=mod_id)
+				self.get_downstream_hierarchy_for_module(mod, parent=mod_id)
 
 	def get_dependencies_for_module(self, module):
 		"""

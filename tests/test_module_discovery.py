@@ -1,53 +1,52 @@
-__author__ = 'colinwren'
-
 import unittest
+import dependency_graph
 from treelib import Tree
 from mock import MagicMock
 from mock import patch
-import dependency_graph
 from dependency_graph import DependencyGraph
+
 
 class TestModuleDiscovery(unittest.TestCase):
 
 	"""
 	Tests:
-	 - Calls function to get module heirachy on module being present
-	 - If no dependencies then returns the module itself
-	 - If dependencies then returns the module itself and gets the dependencies of dependent modules
-	 - If duplicate modules in the tree then renames these to avoid clashes
-	 - On completing the dependent module part of the tree it then goes and gets the modules the module depends on
-	 - Skips the dependent modules if flag set to False
-	 - Skips the depenfing modules if flag set to False
+		Calls function to get module heirachy on module being present
+		If no dependencies then returns the module itself
+		If dependencies then returns the module itself and gets the dependencies of dependent modules
+		If duplicate modules in the tree then renames these to avoid clashes
+		On completing the dependent module part of the tree it then goes and gets the modules the module depends on
+		Skips the dependent modules if flag set to False
+		Skips the depenfing modules if flag set to False
 	"""
 
 	@patch('erppeek.Client')
-	def test_01_calls_get_hierarchy_for_module_when_module_is_found_in_db(self, mock_client):
+	def test_01_calls_get_downstream_hierarchy_for_module_when_module_is_found_in_db(self, mock_client):
 		"""
-		Test that on being passed a valid module the script will go on to call get_hierarchy_for_module
+		Test that on being passed a valid module the script will go on to call get_downstream_hierarchy_for_module
 		:param mock_client: a mocked out version of erppeek.Client
 		:return:
 		"""
 		# Mock Up
 		mock_dp = DependencyGraph
 		orig_mod_search = mock_dp.module_search
-		orig_ghfm = mock_dp.get_hierarchy_for_module
+		orig_ghfm = mock_dp.get_downstream_hierarchy_for_module
 		mock_dp.module_search = MagicMock(return_value=[666])
-		mock_dp.get_hierarchy_for_module = MagicMock()
+		mock_dp.get_downstream_hierarchy_for_module = MagicMock()
 
 		mock_dp('valid_module')
-		mock_dp.get_hierarchy_for_module.assert_called_with('valid_module')
+		mock_dp.get_downstream_hierarchy_for_module.assert_called_with('valid_module')
 
 		# Mock Down
 		mock_client.stop()
 		mock_dp.module_search.stop()
-		mock_dp.get_hierarchy_for_module.stop()
+		mock_dp.get_downstream_hierarchy_for_module.stop()
 		mock_dp.module_search = orig_mod_search
-		mock_dp.get_hierarchy_for_module = orig_ghfm
+		mock_dp.get_downstream_hierarchy_for_module = orig_ghfm
 
 	@patch('erppeek.Client')
-	def test_02_get_hierarchy_for_module_returns_single_node_when_nothing_depend_on_module(self, mock_client):
+	def test_02_get_downstream_hierarchy_for_module_returns_single_node_when_nothing_depend_on_module(self, mock_client):
 		"""
-		Test that get_hierarchy_for_module returns a single node tree structure if no dependent modules are found
+		Test that get_downstream_hierarchy_for_module returns a single node tree structure if no dependent modules are found
 		:param mock_client: A mocked out version of erppeek.Client
 		:return:
 		"""
@@ -62,7 +61,7 @@ class TestModuleDiscovery(unittest.TestCase):
 		mock_dg = mock_dp('valid_module')
 		test_hierarchy = Tree()
 		test_hierarchy.create_node('valid_module', 'valid_module')
-		self.assertEqual(mock_dg.hierarchy.to_json(), test_hierarchy.to_json(), 'get_hierarchy_for_module did not return [] when finding no dependent modules')
+		self.assertEqual(mock_dg.hierarchy.to_json(), test_hierarchy.to_json(), 'get_downstream_hierarchy_for_module did not return [] when finding no dependent modules')
 
 		# Mock Down
 		mock_client.stop()
@@ -74,9 +73,9 @@ class TestModuleDiscovery(unittest.TestCase):
 		mock_dp.dependency_search = orig_dep_search
 
 	@patch('erppeek.Client')
-	def test_03_get_hierarchy_for_module_returns_a_two_node_tree_when_another_module_depends_on_module(self, mock_client):
+	def test_03_get_downstream_hierarchy_for_module_returns_a_two_node_tree_when_another_module_depends_on_module(self, mock_client):
 		"""
-		Test that get_hierarchy_for_module returns a tree structure with two nodes if a dependent module is found
+		Test that get_downstream_hierarchy_for_module returns a tree structure with two nodes if a dependent module is found
 		:param mock_client: A mocked out version of erppeek.Client
 		:return:
 		"""
@@ -109,7 +108,7 @@ class TestModuleDiscovery(unittest.TestCase):
 		test_hierarchy = Tree()
 		test_hierarchy.create_node('valid_module', 'valid_module')
 		test_hierarchy.create_node('dependent_module', 'dependent_module', parent='valid_module')
-		self.assertEqual(mock_dg.hierarchy.to_json(), test_hierarchy.to_json(), 'get_hierarchy_for_module did not return nested dict when finding dependent modules')
+		self.assertEqual(mock_dg.hierarchy.to_json(), test_hierarchy.to_json(), 'get_downstream_hierarchy_for_module did not return nested dict when finding dependent modules')
 
 		# Mock Down
 		mock_client.stop()
@@ -123,7 +122,7 @@ class TestModuleDiscovery(unittest.TestCase):
 	@patch('erppeek.Client')
 	def test_04_get_hierarchy_renames_duplicate_modules(self, mock_client):
 		"""
-		Test that get_hierarchy_for_module renames the second instance of a dependent modules ID so can list that module multiple times
+		Test that get_downstream_hierarchy_for_module renames the second instance of a dependent modules ID so can list that module multiple times
 		- valid_module
 		  - dependent_module_one
 		  - dependent_module_two
@@ -167,7 +166,7 @@ class TestModuleDiscovery(unittest.TestCase):
 		test_hierarchy.create_node('dependent_module_one', 'dependent_module_one', parent='valid_module')
 		test_hierarchy.create_node('dependent_module_two', 'dependent_module_two', parent='valid_module')
 		test_hierarchy.create_node('dependent_module_one', 'dependent_module_one1', parent='dependent_module_two')
-		self.assertEqual(mock_dg.hierarchy.to_json(), test_hierarchy.to_json(), 'get_hierarchy_for_module did not return nested dict when finding dependent modules')
+		self.assertEqual(mock_dg.hierarchy.to_json(), test_hierarchy.to_json(), 'get_downstream_hierarchy_for_module did not return nested dict when finding dependent modules')
 
 		# Mock Down
 		mock_client.stop()
