@@ -21,7 +21,7 @@ def get_erppeek_client(server='http://localhost:8069', db='openerp', user='admin
 
 class DependencyGraph:
 
-	def __init__(self, module, db='openerp', server='http://localhost:8069', user='admin', password='admin'):
+	def __init__(self, module, db='openerp', server='http://localhost:8069', user='admin', password='admin', upstream=True, downstream=True):
 		"""
 		Get a ERPPeek client, check the module we want to generate the graph for is in the database and generate the
 		hierarchy ready for formatting
@@ -40,9 +40,14 @@ class DependencyGraph:
 		if not module_present:
 			raise RuntimeError("{m} module not found in database".format(m=module))
 		else:
-			self.hierarchy = Tree()
-			self.hierarchy.create_node(module, module)
-			self.get_downstream_hierarchy_for_module(module)
+			self.downstream_hierarchy = Tree()
+			self.upstream_hierarchy = Tree()
+			self.downstream_hierarchy.create_node(module, module)
+			self.upstream_hierarchy.create_node(module, module)
+			if downstream:
+				self.get_downstream_hierarchy_for_module(module)
+			if upstream:
+				self.get_upstream_hierarchy_for_module(module)
 
 	def get_downstream_hierarchy_for_module(self, module, parent=None):
 		# Check that module isn't already in hierarchy
@@ -50,15 +55,37 @@ class DependencyGraph:
 		mod_id = module
 		if installed:
 			if parent:
-				if self.hierarchy.get_node(module):
+				if self.downstream_hierarchy.get_node(module):
 					unique_id = uuid.uuid1()
 					mod_id = '{0}_{1}'.format(module, unique_id)
-				self.hierarchy.create_node(module, mod_id, parent=parent)
-			deps = self.get_dependencies_for_module(module)
+				self.downstream_hierarchy.create_node(module, mod_id, parent=parent)
+			deps = self.get_downstream_dependencies_for_module(module)
 			for mod in deps:
 				self.get_downstream_hierarchy_for_module(mod, parent=mod_id)
 
-	def get_dependencies_for_module(self, module):
+	def get_upstream_hierarchy_for_module(self, module, parent=None):
+		# Check that module isn't already in hierarchy
+		installed = self.module_search(module)
+		mod_id = module
+		if installed:
+			# create a new tree with the module being used as root
+			# add the parent to the new tree using paste
+			# set the new tree to be upstream hierarchy
+			mod_tree = Tree()
+			mod_tree.create_node(module, module)
+			if parent:
+				# if self.upstream_hierarchy.get_node(module):
+				# 	unique_id = uuid.uuid1()
+				# 	mod_id = '{0}_{1}'.format(module, unique_id)
+				# self.upstream_hierarchy.create_node(module, mod_id, parent=parent)
+				parent_tree = self.upstream_hierarchy.subtree(parent)
+				mod_tree.paste(module, parent_tree)
+			self.upstream_hierarchy = mod_tree
+			deps = self.get_upstream_dependencies_for_module(module)
+			for mod in deps:
+				self.get_upstream_hierarchy_for_module(mod, parent=mod_id)
+
+	def get_downstream_dependencies_for_module(self, module):
 		"""
 		Recursively get the hierarchy for a module
 		:param module: The module to get the hierarchy for
@@ -66,6 +93,19 @@ class DependencyGraph:
 		"""
 		# Search for modules that depend on the module
 		dependent_mod_ids = self.dependency_search(module)
+		if not dependent_mod_ids:
+			return []
+		dependent_mod_names = self.dependency_read(dependent_mod_ids)
+		return dependent_mod_names
+
+	def get_upstream_dependencies_for_module(self, module):
+		"""
+		Recursively get the modules upstream dependencies
+		:param module: The module to get the hierarchy for
+		:return: Runs itself again with the new module or returns True
+		"""
+		# Search for modules that the module depends on
+		dependent_mod_ids = self.module_search(module)
 		if not dependent_mod_ids:
 			return []
 		dependent_mod_names = self.dependency_read(dependent_mod_ids)
