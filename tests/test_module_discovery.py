@@ -189,6 +189,15 @@ class TestModuleDiscovery(unittest.TestCase):
 		orig_dep_search = mock_dp.dependency_search
 		orig_client_search = mock_client.search
 
+		def module_read_side_effect(value):
+			if value == [666]:
+				return {'id': 666, 'dependencies_id': [668]}
+			else:
+				return []
+
+		mock_dp.module_read = MagicMock()
+		mock_dp.module_read.side_effect = module_read_side_effect
+
 		def module_search_side_effect(value):
 			if value == 'valid_module':
 				return [666]
@@ -208,13 +217,13 @@ class TestModuleDiscovery(unittest.TestCase):
 		mock_dp.dependency_search.side_effect = dependency_search_side_effect
 
 		def dependency_read_side_effect(value):
-			if value == [666]:
+			if value == [668]:
 				return ['upstream_module']
 			else:
 				return []
 
-		mock_dp.dependency_read = MagicMock()
-		mock_dp.dependency_read.side_effect = dependency_read_side_effect
+		mock_dp.upstream_dependency_read = MagicMock()
+		mock_dp.upstream_dependency_read.side_effect = dependency_read_side_effect
 
 		mock_dg = mock_dp('valid_module', downstream=False)
 		test_hierarchy = Tree()
@@ -225,9 +234,11 @@ class TestModuleDiscovery(unittest.TestCase):
 		# Mock Down
 		mock_client.stop()
 		mock_dp.module_search.stop()
+		mock_dp.module_read.stop()
 		mock_client.search.stop()
 		mock_client.search = orig_client_search
 		mock_dp.dependency_search.stop()
+		mock_dp.dependency_read.stop()
 		mock_dp.module_search = orig_mod_search
 		mock_dp.dependency_search = orig_dep_search
 

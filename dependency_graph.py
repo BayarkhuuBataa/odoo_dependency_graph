@@ -68,16 +68,15 @@ class DependencyGraph:
 		installed = self.module_search(module)
 		mod_id = module
 		if installed:
-			# create a new tree with the module being used as root
-			# add the parent to the new tree using paste
-			# set the new tree to be upstream hierarchy
 			mod_tree = Tree()
 			mod_tree.create_node(module, module)
 			if parent:
-				# if self.upstream_hierarchy.get_node(module):
-				# 	unique_id = uuid.uuid1()
-				# 	mod_id = '{0}_{1}'.format(module, unique_id)
+
+				if self.upstream_hierarchy.get_node(module):
+					unique_id = uuid.uuid1()
+					mod_id = '{0}_{1}'.format(module, unique_id)
 				# self.upstream_hierarchy.create_node(module, mod_id, parent=parent)
+
 				parent_tree = self.upstream_hierarchy.subtree(parent)
 				mod_tree.paste(module, parent_tree)
 			self.upstream_hierarchy = mod_tree
@@ -104,12 +103,23 @@ class DependencyGraph:
 		:param module: The module to get the hierarchy for
 		:return: Runs itself again with the new module or returns True
 		"""
-		# Search for modules that the module depends on
-		dependent_mod_ids = self.module_search(module)
-		if not dependent_mod_ids:
+		mod_id = self.module_search(module)
+		if not mod_id:
 			return []
-		dependent_mod_names = self.dependency_read(dependent_mod_ids)
+		mod_deps = self.module_read(mod_id)
+		if not mod_deps:
+			return []
+		dependent_mod_names = self.upstream_dependency_read(mod_deps['dependencies_id'])
 		return dependent_mod_names
+
+	def upstream_dependency_read(self, ids):
+		"""
+		Read ir.module.module.dependency for the names of the upstream dependencies
+		:param ids: ids for the module to get the dependencies
+		:return: List of names
+		"""
+		mods = self.client.read(self.dep_reg, ids, ['name'])
+		return [mod['name'] for mod in mods]
 
 	def dependency_read(self, ids):
 		"""
@@ -137,3 +147,13 @@ class DependencyGraph:
 		:return: List of IDs
 		"""
 		return self.client.search(self.mod_reg, [['state', '=', 'installed'], ['name', '=', module]])
+
+	def module_read(self, mod_ids):
+		"""
+		Read ir.module.module and get the dependencies_id for the module
+		:param mod_ids:
+		:return: List of objects with id, dependencies_id
+		"""
+		if isinstance(mod_ids, list):
+			mod_ids = mod_ids[0]
+		return self.client.read(self.mod_reg, mod_ids, ['dependencies_id'])
