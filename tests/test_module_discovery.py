@@ -9,6 +9,17 @@ from dependency_graph import DependencyGraph
 
 class TestModuleDiscovery(unittest.TestCase):
 
+	"""
+	Tests:
+	 - Calls function to get module heirachy on module being present
+	 - If no dependencies then returns the module itself
+	 - If dependencies then returns the module itself and gets the dependencies of dependent modules
+	 - If duplicate modules in the tree then renames these to avoid clashes
+	 - On completing the dependent module part of the tree it then goes and gets the modules the module depends on
+	 - Skips the dependent modules if flag set to False
+	 - Skips the depenfing modules if flag set to False
+	"""
+
 	@patch('erppeek.Client')
 	def test_01_calls_get_hierarchy_for_module_when_module_is_found_in_db(self, mock_client):
 		"""
