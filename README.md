@@ -10,9 +10,7 @@ This assumes a running Odoo instance at http://localhost:8069 with a database ca
 You can supply your own server, database, user and password
 
 ```
-from dependency_graph import DependencyGraph
-dg = DependencyGraph('web')
-dg.hierarchy.show()
+odoo_dependency_graph web
 
 web
 ├── base_import
