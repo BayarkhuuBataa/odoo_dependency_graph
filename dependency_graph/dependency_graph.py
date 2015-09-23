@@ -1,8 +1,6 @@
-__author__ = 'colinwren'
-
 import erppeek
-from treelib import Tree
 import uuid
+from treelib import Tree
 
 
 def get_erppeek_client(server='http://localhost:8069', db='openerp', user='admin', password='admin'):

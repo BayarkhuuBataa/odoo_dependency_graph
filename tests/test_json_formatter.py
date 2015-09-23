@@ -1,10 +1,12 @@
 __author__ = 'colinwren'
 
-from dependency_graph import DependencyGraph
-from json_formatter import JsonFormatter
 import unittest
+
+from dependency_graph.dependency_graph import DependencyGraph
+from dependency_graph.json_formatter import JsonFormatter
 from mock import Mock
 from treelib import Tree
+
 
 class TestJsonFormatter(unittest.TestCase):
 
