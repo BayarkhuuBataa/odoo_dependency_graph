@@ -1,10 +1,9 @@
-__author__ = 'colinwren'
-
 import unittest
 from mock import MagicMock
 from mock import patch
-import dependency_graph
-from dependency_graph import DependencyGraph
+from dependency_graph import dependency_graph
+from dependency_graph.dependency_graph import DependencyGraph
+
 
 class TestErppeekHandling(unittest.TestCase):
 

@@ -1,11 +1,13 @@
 __author__ = 'colinwren'
 
 import unittest
-from treelib import Tree, Node
-from svg_formatter import SvgFormatter
-from dependency_graph import DependencyGraph
+
+from treelib import Tree
+from dependency_graph.svg_formatter import SvgFormatter
+from dependency_graph.dependency_graph import DependencyGraph
 from mock import Mock
 import svgwrite
+
 
 class TestSvgFormatter(unittest.TestCase):
 
