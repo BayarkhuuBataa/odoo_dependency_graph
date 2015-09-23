@@ -1,8 +1,7 @@
-__author__ = 'colinwren'
-
 from dependency_graph import DependencyGraph
 from treelib import Tree
 import svgwrite
+
 
 class SvgFormatter:
 

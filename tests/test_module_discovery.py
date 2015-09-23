@@ -2,7 +2,8 @@ import unittest
 from treelib import Tree
 from mock import MagicMock
 from mock import patch
-from dependency_graph import DependencyGraph
+from dependency_graph.dependency_graph import DependencyGraph
+
 
 
 class TestModuleDiscovery(unittest.TestCase):
