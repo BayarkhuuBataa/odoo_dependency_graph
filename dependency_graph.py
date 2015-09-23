@@ -69,20 +69,33 @@ class DependencyGraph:
 		mod_id = module
 		if installed:
 			mod_tree = Tree()
-			mod_tree.create_node(module, module)
+			print '{0} - {1}'.format(module, parent)
 			if parent:
-
-				if self.upstream_hierarchy.get_node(module):
-					unique_id = uuid.uuid1()
-					mod_id = '{0}_{1}'.format(module, unique_id)
-				# self.upstream_hierarchy.create_node(module, mod_id, parent=parent)
-
 				parent_tree = self.upstream_hierarchy.subtree(parent)
-				mod_tree.paste(module, parent_tree)
-			self.upstream_hierarchy = mod_tree
+				existing_mod = self.upstream_hierarchy.get_node(module)
+				# if existing_mod:
+				# 	try:
+				# 		unique_id = uuid.uuid1()
+				# 		mod_id = '{0}_{1}'.format(module, unique_id)
+				# 		mod_tree.create_node(module, mod_id)
+				# 		self.upstream_hierarchy.paste(module, parent_tree)
+				# 	except ValueError:
+				# 		# need to be able to sort out tree properly if issue
+				# 		import pdb
+				# 		pdb.set_trace()
+				# 		print 'meh'
+				# else:
+				if not existing_mod:
+					mod_tree.create_node(module, module)
+					mod_tree.paste(module, parent_tree)
+					self.upstream_hierarchy = mod_tree
 			deps = self.get_upstream_dependencies_for_module(module)
 			for mod in deps:
-				self.get_upstream_hierarchy_for_module(mod, parent=mod_id)
+				existing_mod = self.upstream_hierarchy.get_node(mod)
+				print '{0} exists: {1}'.format(mod, existing_mod)
+				if not existing_mod:
+					print '{0} did not exist so getting that'.format(mod)
+					self.get_upstream_hierarchy_for_module(mod, parent=mod_id)
 
 	def get_downstream_dependencies_for_module(self, module):
 		"""
