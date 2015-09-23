@@ -45,4 +45,4 @@ web
 - [x] Add means to export to JSON
 - [ ] Add SVG export
 - [ ] Add functionality to add test / coverage metrics to dependencies (Cobertura) 
-- [ ] Wrap as command line tool
+- [x] Wrap as command line tool
