@@ -1,6 +1,8 @@
 # Odoo Dependency Graph Generator [![Build Status](https://travis-ci.org/Gimpneek/odoo_dependency_graph.svg?branch=master)](https://travis-ci.org/Gimpneek/odoo_dependency_graph)
 A simple script that creates a dependency graph for a given Odoo module. 
 
+# PLEASE NOTE - THIS REPOSITORY IS NO LONGER UNDER ACTIVE DEVELOPMENT
+
 ## How it does it
 The script fires up ERPPeek and using the ir.module.module & ir.module.module.dependency models creates a hierarchy
 graph which can exported via terminal, SVG or JSON.
